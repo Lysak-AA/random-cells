@@ -7,10 +7,6 @@
   font-weight: normal;
 }
 
-#rows-list {
-  outline: 1px solid red;
-}
-
 .rows, .cells {
   list-style: none;
   padding: 0;

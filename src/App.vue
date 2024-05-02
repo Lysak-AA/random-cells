@@ -17,6 +17,7 @@ const minRowsAmount = 101
 const maxRowsAmount = 301
 const minCellsAmount = 11
 const maxCellsAmount = 21
+const updatingCellsInterval = 1000
 
 let rows = ref([[{ num: 0 }]])
 
@@ -64,6 +65,6 @@ onMounted(() => {
     })
   }
 
-  setInterval(updateCellsValues, 1000)
+  setInterval(updateCellsValues, updatingCellsInterval)
 })
 </script>
