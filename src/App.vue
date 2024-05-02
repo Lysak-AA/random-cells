@@ -1,47 +1,69 @@
-<script setup lang="ts">
-import HelloWorld from './components/HelloWorld.vue'
-import TheWelcome from './components/TheWelcome.vue'
-</script>
-
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-    </div>
-  </header>
-
-  <main>
-    <TheWelcome />
-  </main>
+  <section id="rows-list">
+    <ul class="rows" id="rows-section">
+      <li class="row" v-for="row, index in rows" :key="index">
+        <ul class="cells" :id="index.toString()">
+          <li class="cell" v-for="cell, idx in row" :key="idx">{{ cell.num }}</li>
+        </ul>
+      </li>
+    </ul>
+  </section>
 </template>
 
-<style scoped>
-header {
-  line-height: 1.5;
+<script setup lang="ts">
+import { onMounted, ref } from 'vue'
+
+const minRowsAmount = 101
+const maxRowsAmount = 301
+const minCellsAmount = 11
+const maxCellsAmount = 21
+
+let rows = ref([[{ num: 0 }]])
+
+let cellsIndexesToChangeValues = ref([])
+
+const fillCells = () => {
+  const cellsAmount = Math.round(Math.random() * (maxCellsAmount - minCellsAmount) + minCellsAmount)
+  const cells = Array.from({ length: cellsAmount }, () => {
+    return { num:  Math.floor(Math.random() * 100) }
+  })
+  return cells
 }
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
+const fillRows = () => {
+  const rowsAmount = Math.round(Math.random() * (maxRowsAmount - minRowsAmount) + minRowsAmount)
+  const rowsArr = Array.from({ length: rowsAmount }, fillCells)
+  rows.value = rowsArr
 }
 
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
+fillRows()
+
+onMounted(() => {
+  const observableCells = document.querySelectorAll('.cells')
+  observableCells.forEach(cell => {
+    const observer = new IntersectionObserver((entry) => {
+      if (entry[0].intersectionRatio === 1) {
+        cellsIndexesToChangeValues.value.push(entry[0].target.id)
+      } else {
+        if (cellsIndexesToChangeValues.value.length) {
+          cellsIndexesToChangeValues.value = cellsIndexesToChangeValues.value.filter(cell => cell !== entry[0].target.id)
+        }
+      }
+    }, { root: null, rootMargin: '0px', threshold: 1 })
+
+    observer.observe(cell)
+  })
+
+  const updateCellsValues = () => {
+    if (!cellsIndexesToChangeValues.value.length) {
+      return
+    }
+    cellsIndexesToChangeValues.value.forEach(idx => {
+      const randomCellToUpdate = Math.floor(Math.random() * rows.value[idx].length)
+      rows.value[idx][randomCellToUpdate].num = Math.floor(Math.random() * 100)
+    })
   }
 
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-}
-</style>
+  setInterval(updateCellsValues, 1000)
+})
+</script>
